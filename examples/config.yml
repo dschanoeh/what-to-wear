@@ -1,0 +1,32 @@
+server:
+  listen: ":7000"
+cron_expression: "* * * * *"
+open_weather_map:
+  api_key: "[your key here]"
+  city: "Wolfsburg"
+  language: "en"
+messages:
+  - message: >
+      "Better bring an <i class='fas fa-umbrella'></i>."
+    condition: "rain1h > 0.1"
+  - message: "'It would be best to wear a ' + top + ' and ' + bottom + '.'"
+    variables:
+      - name: "top"
+        choices:
+          - expression: "temperature > 20"
+            value: "t-shirt"
+          - expression: "temperature <= 20"
+            value: "sweatshirt"
+          - expression: "temperature <= 12"
+            value: "jacket"
+          - expression: "temperature <= 0"
+            value: "winter coat"
+      - name: "bottom"
+        choices:
+          - expression: "temperature > 20"
+            value: "shorts"
+          - expression: "temperature <= 20"
+            value: "long pants"
+  - message: >
+      "It's <i class='fas fa-bicycle'></i> weather!"
+    condition: "rain1h < 0.2 && temperature > 0"

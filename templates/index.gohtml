@@ -1,0 +1,25 @@
+<html>
+<head>
+<link rel="stylesheet" href="style.css">
+<link href="/fontawesome/css/all.min.css" rel="stylesheet">
+<title>?2w</title>
+</head>
+<body>
+<div class="greeting">
+Hey there.
+</div>
+<div class="report">
+<div class="report-icon"><img src="{{ .WeatherIconURL}}"/></div>
+<div class="report-text">{{ .WeatherReport }}</div>
+</div>
+<div class="messages">
+{{range $index, $element := .Messages }}
+    <div class="message">{{$element}}</div>
+{{end}}
+</div>
+<div class="footer">
+Displaying data for {{.City}} from {{ .CreationTime }}<br/>
+?2w {{ .Version }} 
+</div>
+</body>
+</html>

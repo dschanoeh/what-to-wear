@@ -1,0 +1,36 @@
+body {
+    font-family: "Fira Sans";
+    font-size: 30;
+    margin: 1em;
+}
+
+.report {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    margin: 0.5em 0 0.5em 0;
+}
+
+.report-icon {
+
+}
+
+.report-text {
+
+}
+
+.messages {
+    margin: 0.5em 0 0.5em 0;
+}
+
+.message {
+    margin: 0.5em 0 0.5em 0;
+}
+
+.footer {
+    font-size: 12px;
+    color: grey;
+    position: absolute; 
+    bottom: 0px;
+    margin-bottom: 1em; 
+}
