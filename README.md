@@ -5,6 +5,7 @@ The user can specify messages to be displayed based on weather criteria. Conditi
 
 
 ## Installation
+Besides the what-to-wear binary, a Chrome installation is required on the host.
 
 ## Configuring
 An example configuration can be found [here](https://github.com/dschanoeh/what-to-wear/blob/master/examples/config.yml).
@@ -15,6 +16,11 @@ Note that string expressions defined in the configuration file (such as message 
 The file `templates/index.gohtml` is a templated HTML file representing the website. It can be modified to customize the view.
 
 Any other files to be served (e.g. webfonts, images, ...) can be added in the `static` folder and referenced from the main template.
+
+### Images
+In addition to the website, the display data will also be available as image data. The images can either be received through http from the server or can be
+pushed through MQTT.
+Whenever an update is performed a headless Chrome instance will be used to render the display, process, and push the data.
 
 ### Messages
 Messages can have conditions that determine if they are displayed or not:

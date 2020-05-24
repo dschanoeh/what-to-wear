@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/dschanoeh/what-to-wear/evaluator"
+	"github.com/dschanoeh/what-to-wear/imaging"
+	"github.com/dschanoeh/what-to-wear/mqtt"
 	"github.com/dschanoeh/what-to-wear/owm_handler"
 	"github.com/dschanoeh/what-to-wear/server"
 	"github.com/robfig/cron/v3"
@@ -22,9 +24,11 @@ var (
 	date    = "unknown"
 	builtBy = "unknown"
 
-	config        = Config{}
-	cronScheduler = cron.New()
-	webServer     *server.Server
+	config         = Config{}
+	cronScheduler  = cron.New()
+	webServer      *server.Server
+	imageProcessor *imaging.ImageProcessor
+	mqttClient     *mqtt.MQTTClient
 )
 
 type Config struct {
@@ -32,6 +36,8 @@ type Config struct {
 	Messages       []evaluator.Message              `yaml:"messages"`
 	ServerConfig   server.ServerConfig              `yaml:"server"`
 	CronExpression string                           `yaml:"cron_expression"`
+	ImageConfig    imaging.ImageConfig              `yaml:"imaging"`
+	MQTTConfig     mqtt.MQTTConfig                  `yaml:"mqtt"`
 }
 
 func main() {
@@ -73,9 +79,12 @@ func main() {
 		os.Exit(1)
 	}
 	webServer = server.New(config.ServerConfig)
-
-	// Update once so data is available to be served
-	updateData()
+	imageProcessor = imaging.New(&config.ImageConfig)
+	mqttClient, err = mqtt.New(&config.MQTTConfig)
+	if err != nil {
+		log.Error("Error creating MQTT client: ", err)
+		os.Exit(1)
+	}
 
 	// Schedule future periodic update calls
 	_, err = cronScheduler.AddFunc(config.CronExpression, updateData)
@@ -84,6 +93,9 @@ func main() {
 		os.Exit(1)
 	}
 	cronScheduler.Start()
+
+	// Update once so data is available to be served
+	updateData()
 
 	// Now let's serve
 	webServer.Serve()
@@ -101,16 +113,28 @@ func updateData() {
 		templateMessages[i] = template.HTML(messages[i])
 	}
 
+	currentDateString := time.Now().Format(time.RFC850)
+	tillNextUpdate := 0
+	if len(cronScheduler.Entries()) > 0 {
+		nextTrigger := cronScheduler.Entries()[0].Next
+		delta := nextTrigger.Sub(time.Now())
+		tillNextUpdate = int(delta.Seconds())
+	} else {
+		log.Warn("Scheduler doesn't seem to have any entries...")
+	}
+
 	content := server.Content{
 		Messages:       templateMessages,
 		Version:        version,
-		CreationTime:   time.Now().Format(time.RFC850),
+		CreationTime:   currentDateString,
 		City:           config.OpenWeatherMap.City,
 		WeatherIconURL: report.WeatherIconURL,
 		WeatherReport:  fmt.Sprintf("%.0f°C", data.CurrentTemp) + " - " + report.Description,
 	}
 
 	webServer.UpdateData(&content)
+	imageProcessor.Update()
+	mqttClient.Post(imageProcessor.GetImageAsBinary(), currentDateString, tillNextUpdate)
 }
 
 func loadConfig(filename string, config *Config) error {

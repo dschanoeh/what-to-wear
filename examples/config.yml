@@ -5,6 +5,17 @@ open_weather_map:
   api_key: "[your key here]"
   city: "Wolfsburg"
   language: "en"
+imaging:
+  width: 800
+  height: 480
+  chrome_binary: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+  scrape_url: "http://127.0.0.1:7000"
+  working_dir: "./static/"
+  dithering: true
+mqtt:
+  broker_url: "127.0.0.1:1883"
+  base_topic: "what-to-wear"
+  chunk_size: 6000
 messages:
   - message: >
       "Better bring an <i class='fas fa-umbrella'></i>."
