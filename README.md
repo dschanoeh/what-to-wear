@@ -3,6 +3,7 @@ what-to-wear is a service that periodically queries the openweathermap-API to ge
 
 The user can specify messages to be displayed based on weather criteria. Conditions are evaluated using the [Expr expression language](https://github.com/antonmedv/expr).
 
+![](examples/screenshot.png)
 
 ## Installation
 Besides the what-to-wear binary, a Chrome installation is required on the host.
