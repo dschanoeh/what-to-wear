@@ -2,3 +2,4 @@
 /dist
 what-to-wear
 .DS_Store
+/static/*.png
