@@ -1,6 +1,8 @@
 # what-to-wear
 what-to-wear is a service that periodically queries the openweathermap-API to get the latest weather data and generates a dynamic info display.
 
+Together with [ePaperDisplay](https://github.com/dschanoeh/ePaperDisplay) it can be used as an e paper weather display.
+
 The user can specify messages to be displayed based on weather criteria. Conditions are evaluated using the [Expr expression language](https://github.com/antonmedv/expr).
 
 ![](examples/screenshot.png)
