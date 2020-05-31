@@ -100,7 +100,7 @@ func (i *ImageProcessor) GetImageAsBinary() []byte {
 			// Now, we need to shrink every 8 pixels into one byte
 			var b byte
 			for x := 0; x < 8; x++ {
-				px := i.currentImage.GrayAt(w, h+x)
+				px := i.currentImage.GrayAt(w+x, h)
 				if px.Y != 0 {
 					b |= 1 << (7 - x)
 				}
