@@ -24,6 +24,7 @@ type Server struct {
 	config            ServerConfig
 	currentContent    *Content
 	staticFileHandler http.Handler
+	currentImageData  []byte
 }
 
 func New(c ServerConfig) *Server {
@@ -42,12 +43,24 @@ func (server *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, server.currentContent)
 }
 
-func (server *Server) genericHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		server.staticFileHandler.ServeHTTP(w, r)
-		return
+func (server *Server) UpdateImage(data []byte) {
+	server.currentImageData = data
+}
+
+func (server *Server) imageHandler(w http.ResponseWriter, r *http.Request) {
+	if server.currentImageData != nil && len(server.currentImageData) > 0 {
+		w.Write(server.currentImageData)
 	}
-	server.indexHandler(w, r)
+}
+
+func (server *Server) genericHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/eInkImage" {
+		server.imageHandler(w, r)
+	} else if r.URL.Path == "/" {
+		server.indexHandler(w, r)
+	} else {
+		server.staticFileHandler.ServeHTTP(w, r)
+	}
 }
 
 func (server *Server) UpdateData(data *Content) {

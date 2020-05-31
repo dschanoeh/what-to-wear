@@ -85,6 +85,7 @@ func main() {
 		log.Error("Error creating MQTT client: ", err)
 		os.Exit(1)
 	}
+	mqttClient.PostImageURL("http://" + config.ServerConfig.Listen + "/eInkImage")
 
 	// Schedule future periodic update calls
 	_, err = cronScheduler.AddFunc(config.CronExpression, updateData)
@@ -96,6 +97,9 @@ func main() {
 
 	// Update once so data is available to be served
 	updateData()
+
+	// Start computing and publishing update times
+	go publishNextUpdateTime()
 
 	// Now let's serve
 	webServer.Serve()
@@ -114,15 +118,6 @@ func updateData() {
 	}
 
 	currentDateString := time.Now().Format(time.RFC850)
-	tillNextUpdate := 0
-	if len(cronScheduler.Entries()) > 0 {
-		nextTrigger := cronScheduler.Entries()[0].Next
-		delta := nextTrigger.Sub(time.Now())
-		tillNextUpdate = int(delta.Seconds())
-	} else {
-		log.Warn("Scheduler doesn't seem to have any entries...")
-	}
-
 	content := server.Content{
 		Messages:       templateMessages,
 		Version:        version,
@@ -134,7 +129,24 @@ func updateData() {
 
 	webServer.UpdateData(&content)
 	imageProcessor.Update()
-	mqttClient.Post(imageProcessor.GetImageAsBinary(), currentDateString, tillNextUpdate)
+	mqttClient.Post(imageProcessor.GetImageAsBinary(), currentDateString)
+	webServer.UpdateImage(imageProcessor.GetImageAsBinary())
+}
+
+func publishNextUpdateTime() {
+	for true {
+		tillNextUpdate := 0
+		if len(cronScheduler.Entries()) > 0 {
+			nextTrigger := cronScheduler.Entries()[0].Next
+			delta := nextTrigger.Sub(time.Now())
+			tillNextUpdate = int(delta.Seconds())
+		} else {
+			log.Warn("Scheduler doesn't seem to have any entries...")
+		}
+		mqttClient.RefreshUpdateTime(tillNextUpdate)
+
+		time.Sleep(5 * time.Second)
+	}
 }
 
 func loadConfig(filename string, config *Config) error {
