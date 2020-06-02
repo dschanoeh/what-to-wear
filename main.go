@@ -107,8 +107,14 @@ func main() {
 
 func updateData() {
 	log.Info("Updating data...")
-	data, report := owm_handler.GetData(config.OpenWeatherMap)
-	log.Info(data)
+	data, report, err := owm_handler.GetData(config.OpenWeatherMap)
+	if err != nil {
+		log.Error("Didn't receive updated information. Skipping update: ", err)
+		return
+	}
+	log.Infof("Evaluation data: %+v\n", data)
+	log.Infof("Weather report: %+v\n", report)
+
 	messages := evaluator.Evaluate(data, &config.Messages)
 
 	// Convert to HTML templates to allow HTML tags to pass through
