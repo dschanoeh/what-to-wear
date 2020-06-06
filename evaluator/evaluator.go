@@ -159,7 +159,7 @@ func Compile(messages *[]Message) error {
 	for i, _ := range *messages {
 		err := compileMessage(&((*messages)[i]), *env)
 		if err != nil {
-			log.Error("Couldn't compile rule: ", err)
+			return err
 		}
 	}
 
