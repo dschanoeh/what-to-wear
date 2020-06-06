@@ -18,6 +18,11 @@ body {
     margin: 0.5em 0 0.5em 0;
 }
 
+.report-icon {
+    font-size: 50;
+    margin-right: 0.5em;
+}
+
 .messages {
     margin: 0.5em 0 0.5em 0;
 }

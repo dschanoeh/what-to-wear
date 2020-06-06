@@ -35,8 +35,9 @@ type ForecastEvaluation struct {
 }
 
 type WeatherReport struct {
-	WeatherIconURL string
-	Description    string
+	WeatherIconURL  string
+	Description     string
+	FontAwesomeIcon string
 }
 
 func GetData(config OpenWeatherMapConfig) (*EvaluationData, *WeatherReport, error) {
@@ -88,8 +89,37 @@ func GetData(config OpenWeatherMapConfig) (*EvaluationData, *WeatherReport, erro
 	report := WeatherReport{}
 	report.Description = weather.Description
 	report.WeatherIconURL = "http://openweathermap.org/img/wn/" + weather.Icon + "@2x.png"
+	report.FontAwesomeIcon = FontAwesomeIconFromWeatherID(weather.ID)
 
 	return &data, &report, nil
+}
+
+// FontAwesomeIconFromWeatherID returns a font awesome icon matching a owm weather condition
+// See https://openweathermap.org/weather-conditions for an overview
+func FontAwesomeIconFromWeatherID(id int) string {
+	switch id {
+	case 200, 201, 202, 210, 211, 212, 221, 230, 231, 232:
+		return "bolt"
+	case 300, 301, 302, 310, 311, 312, 313, 314, 321:
+		return "cloud-rain"
+	case 500, 501, 502, 503, 504:
+		return "cloud-sun-rain"
+	case 511:
+		return "snowflake"
+	case 520, 521, 522, 531:
+		return "cloud-showers-heavy"
+	case 600, 601, 602, 611, 612, 613, 615, 616, 620, 621, 622:
+		return "snowflake"
+	case 800:
+		return "sun"
+	case 801, 802:
+		return "cloud-sun"
+	case 803, 804:
+		return "cloud"
+	default:
+		log.Warnf("Couldn't find icon for weather ID %d", id)
+		return "question"
+	}
 }
 
 func (fc ForecastEvaluation) TempIn(hours int) float64 {

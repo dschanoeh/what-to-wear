@@ -129,12 +129,13 @@ func updateData() {
 
 	currentDateString := time.Now().Format(time.RFC850)
 	content := server.Content{
-		Messages:       templateMessages,
-		Version:        version,
-		CreationTime:   currentDateString,
-		City:           config.OpenWeatherMap.City,
-		WeatherIconURL: report.WeatherIconURL,
-		WeatherReport:  fmt.Sprintf("%.0f°C", data.CurrentTemp) + " - " + report.Description,
+		Messages:        templateMessages,
+		Version:         version,
+		CreationTime:    currentDateString,
+		City:            config.OpenWeatherMap.City,
+		WeatherIconURL:  report.WeatherIconURL,
+		FontAwesomeIcon: report.FontAwesomeIcon,
+		WeatherReport:   fmt.Sprintf("%.0f°C", data.CurrentTemp) + " - " + report.Description,
 	}
 
 	webServer.UpdateData(&content)

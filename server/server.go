@@ -12,12 +12,13 @@ type ServerConfig struct {
 }
 
 type Content struct {
-	WeatherReport  string
-	City           string
-	Messages       []template.HTML
-	Version        string
-	CreationTime   string
-	WeatherIconURL string
+	WeatherReport   string
+	City            string
+	Messages        []template.HTML
+	Version         string
+	CreationTime    string
+	WeatherIconURL  string
+	FontAwesomeIcon string
 }
 
 type Server struct {
@@ -38,9 +39,14 @@ func New(c ServerConfig) *Server {
 func (server *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("templates/index.gohtml")
 	if err != nil {
+		log.Warn("Error when parsing template: ", err)
 		return
 	}
-	t.Execute(w, server.currentContent)
+	err = t.Execute(w, server.currentContent)
+	if err != nil {
+		log.Warn("Error when executing template: ", err)
+		return
+	}
 }
 
 func (server *Server) UpdateImage(data []byte) {
@@ -70,6 +76,7 @@ func (server *Server) UpdateData(data *Content) {
 func (server *Server) Serve() {
 	http.HandleFunc("/", server.genericHandler)
 
+	log.Infof("Listening at %s ...", server.config.Listen)
 	err := http.ListenAndServe(server.config.Listen, nil)
 	if err != nil {
 		log.Error(err)
