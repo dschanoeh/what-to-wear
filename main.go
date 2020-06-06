@@ -18,6 +18,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const (
+	notificationTimeDelay = 10
+)
+
 var (
 	version = "dev"
 	commit  = "none"
@@ -96,7 +100,7 @@ func main() {
 	cronScheduler.Start()
 
 	// Update once so data is available to be served
-	updateData()
+	go updateData()
 
 	// Start computing and publishing update times
 	go publishNextUpdateTime()
@@ -146,6 +150,8 @@ func publishNextUpdateTime() {
 			nextTrigger := cronScheduler.Entries()[0].Next
 			delta := nextTrigger.Sub(time.Now())
 			tillNextUpdate = int(delta.Seconds())
+			// We'll lie a little bit to make sure the image is already rendered when the client checks in
+			tillNextUpdate += notificationTimeDelay
 		} else {
 			log.Warn("Scheduler doesn't seem to have any entries...")
 		}
