@@ -3,6 +3,7 @@ package evaluator
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/vm"
@@ -38,6 +39,11 @@ func buildEnv(data *owm_handler.EvaluationData) *map[string]interface{} {
 			"rain3h":      0.0,
 			"snow1h":      0.0,
 			"snow3h":      0.0,
+			"uvValue":     0.0,
+			"cloudiness":  0,
+			"windSpeed":   0.0,
+			"currentTime": time.Now(),
+			"forecast":    owm_handler.ForecastEvaluation{},
 			"sprintf":     fmt.Sprintf,
 		}
 		return &env
@@ -50,6 +56,11 @@ func buildEnv(data *owm_handler.EvaluationData) *map[string]interface{} {
 		"rain3h":      data.Rain3h,
 		"snow1h":      data.Snow1h,
 		"snow3h":      data.Snow3h,
+		"uvValue":     data.UVValue,
+		"cloudiness":  data.Cloudiness,
+		"windSpeed":   data.WindSpeed,
+		"currentTime": data.CurrentTime,
+		"forecast":    data.Forecast,
 		"sprintf":     fmt.Sprintf,
 	}
 	return &env
