@@ -23,7 +23,7 @@ archives:
     amd64: x86_64
   files:
     - examples/config.yml
-    - static/*
+    - static/**/*
     - templates/*
 checksum:
   name_template: 'checksums.txt'
