@@ -34,6 +34,8 @@ func buildEnv(data *owm_handler.EvaluationData) *map[string]interface{} {
 	if data == nil {
 		env := map[string]interface{}{
 			"temperature": 20.0,
+			"tempMin":     0.0,
+			"tempMax":     0.0,
 			"feelsLike":   21.0,
 			"rain1h":      0.0,
 			"rain3h":      0.0,
@@ -51,6 +53,8 @@ func buildEnv(data *owm_handler.EvaluationData) *map[string]interface{} {
 
 	env := map[string]interface{}{
 		"temperature": data.CurrentTemp,
+		"tempMin":     data.TempMin,
+		"tempMax":     data.TempMax,
 		"feelsLike":   data.FeelsLike,
 		"rain1h":      data.Rain1h,
 		"rain3h":      data.Rain3h,

@@ -185,3 +185,23 @@ func (fc ForecastEvaluation) AverageTemperatureTill(hour int) float64 {
 
 	return val / float64(num)
 }
+
+// AverageFeelsLikeTill returns the average feels-like temperature from now till hour of the day
+func (fc ForecastEvaluation) AverageFeelsLikeTill(hour int) float64 {
+	currentTime := time.Now()
+	endtime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), hour, 0, 0, 0, currentTime.Location())
+	val := 0.0
+	num := 0
+
+	for _, item := range fc.ForecastData.List {
+		forecastTime := time.Unix(int64(item.Dt), 0)
+		if forecastTime.After(currentTime) && forecastTime.Before(endtime) {
+			temp := item.Main.FeelsLike
+			log.Debugf("Time %s matches the criteria - adding %f temperature", forecastTime.String(), temp)
+			val += temp
+			num++
+		}
+	}
+
+	return val / float64(num)
+}

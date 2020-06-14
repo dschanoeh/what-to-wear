@@ -19,25 +19,28 @@ mqtt:
 messages:
   - message: >
       "Better bring an <i class='fas fa-umbrella'></i>."
-    condition: "rain1h > 0.1"
+    condition: "forecast.CumulativePrecipitationTill(20) > 0.5"
   - message: "'It would be best to wear a ' + top + ' and ' + bottom + '.'"
     variables:
       - name: "top"
         choices:
-          - expression: "temperature > 20"
+          - expression: "forecast.AverageFeelsLikeTill(20) > 20"
             value: "t-shirt"
-          - expression: "temperature <= 20"
+          - expression: "forecast.AverageFeelsLikeTill(20) <= 20"
             value: "sweatshirt"
-          - expression: "temperature <= 12"
+          - expression: "forecast.AverageFeelsLikeTill(20) <= 12"
             value: "jacket"
-          - expression: "temperature <= 0"
+          - expression: "forecast.AverageFeelsLikeTill(20) <= 0"
             value: "winter coat"
       - name: "bottom"
         choices:
-          - expression: "temperature > 20"
+          - expression: "forecast.AverageFeelsLikeTill(20) > 20"
             value: "shorts"
-          - expression: "temperature <= 20"
+          - expression: "forecast.AverageFeelsLikeTill(20) <= 20"
             value: "long pants"
   - message: >
       "It's <i class='fas fa-bicycle'></i> weather!"
-    condition: "rain1h < 0.2 && temperature > 0"
+    condition: "(rain3h + snow3h) < 0.2 && feelsLike > 0"
+  - message: >
+      "It's <i class='fas fa-bicycle'></i> to work weather!"
+    condition: "forecast.CumulativePrecipitationTill(17) < 0.2 && tempMin > 0"
