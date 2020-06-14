@@ -166,8 +166,8 @@ func (fc ForecastEvaluation) CumulativePrecipitationTill(hour int) float64 {
 	return val
 }
 
-// AverageTermperatureTill returns the average temperature from now till hour of the day
-func (fc ForecastEvaluation) AverageTermperatureTill(hour int) float64 {
+// AverageTemperatureTill returns the average temperature from now till hour of the day
+func (fc ForecastEvaluation) AverageTemperatureTill(hour int) float64 {
 	currentTime := time.Now()
 	endtime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), hour, 0, 0, 0, currentTime.Location())
 	val := 0.0
