@@ -1,10 +1,14 @@
 package imaging
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"image"
+	"io/ioutil"
+	"os"
 	"os/exec"
+	"time"
 
 	"github.com/MaxHalford/halfgone"
 	log "github.com/sirupsen/logrus"
@@ -13,6 +17,7 @@ import (
 const (
 	chromeScreenshotFilename = "screenshot.png"
 	ditheredFilename         = "dithered.png"
+	chromeTimeout            = 10000 // in ms
 )
 
 type ImageConfig struct {
@@ -27,11 +32,27 @@ type ImageConfig struct {
 type ImageProcessor struct {
 	imageConfig  *ImageConfig
 	currentImage *image.Gray
+	tempDir      string
 }
 
-func New(config *ImageConfig) *ImageProcessor {
-	i := ImageProcessor{imageConfig: config}
-	return &i
+func New(config *ImageConfig) (*ImageProcessor, error) {
+	tempDir, err := ioutil.TempDir("", "what-to-wear")
+	if err != nil {
+		return nil, err
+	}
+	log.Infof("Created temp dir %s", tempDir)
+
+	i := ImageProcessor{imageConfig: config, tempDir: tempDir}
+
+	return &i, nil
+}
+func (i *ImageProcessor) Close() error {
+	err := os.RemoveAll(i.tempDir)
+	if err != nil {
+		log.Error("Couldn't delete temp dir:", err)
+	}
+
+	return err
 }
 
 func (i *ImageProcessor) takeScreenshot() error {
@@ -40,7 +61,10 @@ func (i *ImageProcessor) takeScreenshot() error {
 		return errors.New("didn't find Chrome executable" + i.imageConfig.ChromeBinary)
 	}
 
-	cmd := exec.Command(i.imageConfig.ChromeBinary,
+	ctx, cancel := context.WithTimeout(context.Background(), chromeTimeout*time.Millisecond)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, i.imageConfig.ChromeBinary,
 		"--headless",
 		"--disable-gpu",
 		"--screenshot",
@@ -48,10 +72,26 @@ func (i *ImageProcessor) takeScreenshot() error {
 		i.imageConfig.ScrapeURL,
 	)
 
-	cmd.Dir = i.imageConfig.WorkingDir
-	err = cmd.Run()
+	cmd.Dir = i.tempDir + "/"
+	log.Debug("Starting chrome...")
+	out, err := cmd.Output()
 
-	return err
+	if ctx.Err() == context.DeadlineExceeded {
+		log.Error("Chrome output: ", string(out))
+		return errors.New("Chrome timeout")
+	}
+
+	if err != nil {
+		return err
+	}
+
+	log.Debug("Chrome is done.")
+
+	if _, err := os.Stat(i.tempDir + "/" + chromeScreenshotFilename); err == nil {
+		return nil
+	}
+
+	return errors.New("Screenshot was not created")
 }
 
 func (i *ImageProcessor) Update() {
@@ -60,7 +100,7 @@ func (i *ImageProcessor) Update() {
 		log.Error(err)
 		return
 	}
-	screenshot, err := halfgone.LoadImage(i.imageConfig.WorkingDir + "/" + chromeScreenshotFilename)
+	screenshot, err := halfgone.LoadImage(i.tempDir + "/" + chromeScreenshotFilename)
 	if err != nil {
 		log.Error(err)
 		return
