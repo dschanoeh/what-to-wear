@@ -156,13 +156,15 @@ func (fc ForecastEvaluation) CumulativePrecipitationTill(hour int) float64 {
 
 	for _, item := range fc.ForecastData.List {
 		forecastTime := time.Unix(int64(item.Dt), 0)
-		if forecastTime.After(currentTime) && forecastTime.Before(endtime) {
+		log.Debugf("Checking forecast time %s", forecastTime.String())
+		if forecastTime.After(currentTime) && (forecastTime.Before(endtime) || forecastTime.Equal(endtime)) {
 			precipAmount := item.Rain.ThreeH + item.Snow.ThreeH
 			log.Debugf("Time %s matches the criteria - adding %f precipitation", forecastTime.String(), precipAmount)
 			val += precipAmount
 		}
 	}
 
+	log.Debugf("Cumulative precipitation till %d o'clock: %f", hour, val)
 	return val
 }
 
@@ -175,7 +177,7 @@ func (fc ForecastEvaluation) AverageTemperatureTill(hour int) float64 {
 
 	for _, item := range fc.ForecastData.List {
 		forecastTime := time.Unix(int64(item.Dt), 0)
-		if forecastTime.After(currentTime) && forecastTime.Before(endtime) {
+		if forecastTime.After(currentTime) && (forecastTime.Before(endtime) || forecastTime.Equal(endtime)) {
 			temp := item.Main.Temp
 			log.Debugf("Time %s matches the criteria - adding %f temperature", forecastTime.String(), temp)
 			val += temp
@@ -183,7 +185,9 @@ func (fc ForecastEvaluation) AverageTemperatureTill(hour int) float64 {
 		}
 	}
 
-	return val / float64(num)
+	result := val / float64(num)
+	log.Debugf("Average temperature like till %d o'clock: %f", hour, result)
+	return result
 }
 
 // AverageFeelsLikeTill returns the average feels-like temperature from now till hour of the day
@@ -195,7 +199,7 @@ func (fc ForecastEvaluation) AverageFeelsLikeTill(hour int) float64 {
 
 	for _, item := range fc.ForecastData.List {
 		forecastTime := time.Unix(int64(item.Dt), 0)
-		if forecastTime.After(currentTime) && forecastTime.Before(endtime) {
+		if forecastTime.After(currentTime) && (forecastTime.Before(endtime) || forecastTime.Equal(endtime)) {
 			temp := item.Main.FeelsLike
 			log.Debugf("Time %s matches the criteria - adding %f temperature", forecastTime.String(), temp)
 			val += temp
@@ -203,5 +207,7 @@ func (fc ForecastEvaluation) AverageFeelsLikeTill(hour int) float64 {
 		}
 	}
 
-	return val / float64(num)
+	result := val / float64(num)
+	log.Debugf("Average feels like till %d o'clock: %f", hour, result)
+	return result
 }
