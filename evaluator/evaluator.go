@@ -12,11 +12,13 @@ import (
 )
 
 type Message struct {
-	Message           string `yaml:"message"`
-	Condition         string `yaml:"condition"`
-	compiledCondition *vm.Program
-	compiledMessage   *vm.Program
-	Variables         []Variable `yaml:"variables"`
+	Message                 string `yaml:"message"`
+	NegativeMessage         string `yaml:"negative_message"`
+	Condition               string `yaml:"condition"`
+	compiledCondition       *vm.Program
+	compiledMessage         *vm.Program
+	compiledNegativeMessage *vm.Program
+	Variables               []Variable `yaml:"variables"`
 }
 
 type Variable struct {
@@ -102,11 +104,21 @@ func compileMessage(message *Message, env map[string]interface{}) error {
 	}
 	message.compiledMessage = program
 
+	if message.NegativeMessage != "" {
+		program, err = expr.Compile(message.NegativeMessage, expr.Env(variableNames))
+		if err != nil {
+			return err
+		}
+		message.compiledNegativeMessage = program
+	}
+
 	return nil
 }
 
 func evaluateMessage(message *Message, env map[string]interface{}) (string, error) {
 	log.Debug("Evaluating message: " + message.Message)
+
+	conditionResult := false
 	// If we have a condition, evaluate that first
 	if message.compiledCondition != nil {
 		output, err := expr.Run(message.compiledCondition, env)
@@ -117,7 +129,10 @@ func evaluateMessage(message *Message, env map[string]interface{}) (string, erro
 		if !ok {
 			return "", errors.New("Condition didn't evaluate to boolean")
 		}
-		if !result {
+
+		conditionResult = result
+		// If the result is negative and we don't have a negative message, we can skip further evaluation
+		if !conditionResult && message.NegativeMessage == "" {
 			return "", nil
 		}
 	}
@@ -129,8 +144,16 @@ func evaluateMessage(message *Message, env map[string]interface{}) (string, erro
 		setEnvironment[v.Name] = value
 	}
 
+	// Pick the message based on condition result
+	var finalProgram *vm.Program
+	if message.compiledCondition == nil || conditionResult {
+		finalProgram = message.compiledMessage
+	} else {
+		finalProgram = message.compiledNegativeMessage
+	}
+
 	// Evaluate the final expression
-	output, err := expr.Run(message.compiledMessage, setEnvironment)
+	output, err := expr.Run(finalProgram, setEnvironment)
 	if err != nil {
 		return "", err
 	}

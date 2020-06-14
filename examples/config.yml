@@ -43,4 +43,6 @@ messages:
     condition: "(rain3h + snow3h) < 0.2 && feelsLike > 0"
   - message: >
       "It's <i class='fas fa-bicycle'></i> to work weather!"
+    negative_message: >
+      "No <i class='fas fa-bicycle'></i> to work weather <i class='fas fa-frown'></i>"
     condition: "forecast.CumulativePrecipitationTill(17) < 0.2 && tempMin > 0"

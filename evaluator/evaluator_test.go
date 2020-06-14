@@ -72,3 +72,23 @@ func TestEvaluateRule3(t *testing.T) {
 		t.Error("Result is: ", s)
 	}
 }
+
+func TestNegativeMessage(t *testing.T) {
+	set := Message{
+		Message:         "'Bring an umbrella'",
+		NegativeMessage: "'Bring two umbrellas'",
+		Condition:       `temperature < 20`,
+	}
+
+	env := buildEnv(nil)
+	(*env)["temperature"] = 21
+
+	compileMessage(&set, *env)
+	s, err := evaluateMessage(&set, *env)
+	if err != nil {
+		t.Error("An error was returned: ", err)
+	}
+	if s != "Bring two umbrellas" {
+		t.Error("Result is: ", s)
+	}
+}
