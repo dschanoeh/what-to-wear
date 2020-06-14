@@ -6,6 +6,8 @@ import (
 	"html/template"
 	"io/ioutil"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/dschanoeh/what-to-wear/evaluator"
@@ -45,6 +47,43 @@ type Config struct {
 }
 
 func main() {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+
+	go func() {
+		for {
+			s := <-sigChan
+			switch s {
+			case syscall.SIGHUP:
+				log.Info("SIGHUP")
+				cleanup()
+				os.Exit(0)
+
+			case syscall.SIGINT:
+				log.Info("SIGINT")
+				cleanup()
+				os.Exit(0)
+
+			case syscall.SIGTERM:
+				log.Info("SIGTERM")
+				cleanup()
+				os.Exit(0)
+
+			case syscall.SIGQUIT:
+				log.Info("SIGQUIT")
+				cleanup()
+				os.Exit(0)
+
+			default:
+				log.Warn("Received unknown signal")
+			}
+		}
+	}()
+
 	var verbose = flag.Bool("verbose", false, "Turns on verbose information on the update process. Otherwise, only errors cause output.")
 	var debug = flag.Bool("debug", false, "Turns on debug information")
 	var configFile = flag.String("config", "", "Config file")
@@ -83,7 +122,12 @@ func main() {
 		os.Exit(1)
 	}
 	webServer = server.New(config.ServerConfig)
-	imageProcessor = imaging.New(&config.ImageConfig)
+	imageProcessor, err = imaging.New(&config.ImageConfig)
+	if err != nil {
+		log.Error("Error creating image processor: ", err)
+		os.Exit(1)
+	}
+	defer imageProcessor.Close()
 	mqttClient, err = mqtt.New(&config.MQTTConfig)
 	if err != nil {
 		log.Error("Error creating MQTT client: ", err)
@@ -107,6 +151,14 @@ func main() {
 
 	// Now let's serve
 	webServer.Serve()
+}
+
+func cleanup() {
+	log.Info("Cleaning up...")
+	cronScheduler.Stop()
+	imageProcessor.Close()
+	mqttClient.Close()
+	webServer.Close()
 }
 
 func updateData() {

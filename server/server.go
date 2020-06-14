@@ -26,13 +26,18 @@ type Server struct {
 	currentContent    *Content
 	staticFileHandler http.Handler
 	currentImageData  []byte
+	httpServer        *http.Server
 }
 
 func New(c ServerConfig) *Server {
+	mux := http.NewServeMux()
 	s := Server{
 		config:            c,
 		staticFileHandler: http.FileServer(http.Dir("./static/")),
+		httpServer:        &http.Server{Addr: c.Listen, Handler: mux},
 	}
+
+	mux.HandleFunc("/", s.genericHandler)
 	return &s
 }
 
@@ -74,11 +79,13 @@ func (server *Server) UpdateData(data *Content) {
 }
 
 func (server *Server) Serve() {
-	http.HandleFunc("/", server.genericHandler)
-
 	log.Infof("Listening at %s ...", server.config.Listen)
-	err := http.ListenAndServe(server.config.Listen, nil)
+	err := server.httpServer.ListenAndServe()
 	if err != nil {
 		log.Error(err)
 	}
+}
+
+func (server *Server) Close() error {
+	return server.httpServer.Close()
 }

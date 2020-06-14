@@ -37,6 +37,11 @@ func New(config *MQTTConfig) (*MQTTClient, error) {
 	return &c, nil
 }
 
+func (c *MQTTClient) Close() error {
+	c.client.Disconnect(100)
+	return nil
+}
+
 func (c *MQTTClient) Post(payload []byte, currentDateString string) error {
 	if !c.client.IsConnected() {
 		return errors.New("MQTT not connected")
