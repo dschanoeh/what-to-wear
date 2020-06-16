@@ -87,7 +87,7 @@ func main() {
 	var verbose = flag.Bool("verbose", false, "Turns on verbose information on the update process. Otherwise, only errors cause output.")
 	var debug = flag.Bool("debug", false, "Turns on debug information")
 	var configFile = flag.String("config", "", "Config file")
-	var versionFlag = flag.Bool("version", false, "Prints version information of the hover-ddns binary")
+	var versionFlag = flag.Bool("version", false, "Prints version information of this binary")
 
 	flag.Parse()
 
