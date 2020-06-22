@@ -31,18 +31,19 @@ Messages can have conditions that determine if they are displayed or not:
 ```yaml
 - message: >
       "Better bring an <i class='fas fa-umbrella'></i>."
-    condition: "rain1h > 0.1"
+    condition: "weather.CumulativePrecipitationTill(todayAt(20)) > 0.5"
 ```
 
 Variables can be defined that that can be built into the message string. Variables have different choices which are evaluated top to bottom (in case the conditions overlap).
 
 ```yaml
 - message: "'It would be best to wear a ' + top"
+    condition: "currentTime.Hour() < 20"
     variables:
       - name: "top"
         choices:
-          - expression: "temperature > 20"
+          - expression: "weather.AverageFeelsLikeTill(todayAt(20)) > 20"
             value: "t-shirt"
-          - expression: "temperature <= 20"
+          - expression: "weather.AverageFeelsLikeTill(todayAt(20)) <= 20"
             value: "sweatshirt"
 ```
