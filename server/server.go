@@ -13,7 +13,7 @@ type ServerConfig struct {
 
 type Content struct {
 	WeatherReport   string
-	City            string
+	Location        string
 	Messages        []template.HTML
 	Version         string
 	CreationTime    string

@@ -184,10 +184,10 @@ func updateData() {
 		Messages:        templateMessages,
 		Version:         version,
 		CreationTime:    currentDateString,
-		City:            config.OpenWeatherMap.City,
+		Location:        fmt.Sprintf("(%.3f, %.3f)", config.OpenWeatherMap.Latitude, config.OpenWeatherMap.Longitude),
 		WeatherIconURL:  report.WeatherIconURL,
 		FontAwesomeIcon: report.FontAwesomeIcon,
-		WeatherReport:   fmt.Sprintf("%.0f°C", data.CurrentTemp) + " - " + report.Description,
+		WeatherReport:   fmt.Sprintf("%.0f°C", data.Current.Temperature) + " - " + report.Description,
 	}
 
 	webServer.UpdateData(&content)

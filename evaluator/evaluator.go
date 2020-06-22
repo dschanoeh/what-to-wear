@@ -7,7 +7,7 @@ import (
 
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/vm"
-	"github.com/dschanoeh/what-to-wear/owm_handler"
+	owm "github.com/dschanoeh/go-owm"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -32,44 +32,37 @@ type Choice struct {
 	program    *vm.Program
 }
 
-func buildEnv(data *owm_handler.EvaluationData) *map[string]interface{} {
+func buildEnv(data *owm.WeatherData) *map[string]interface{} {
 	if data == nil {
 		env := map[string]interface{}{
-			"temperature": 20.0,
-			"tempMin":     0.0,
-			"tempMax":     0.0,
-			"feelsLike":   21.0,
-			"rain1h":      0.0,
-			"rain3h":      0.0,
-			"snow1h":      0.0,
-			"snow3h":      0.0,
-			"uvValue":     0.0,
-			"cloudiness":  0,
-			"windSpeed":   0.0,
-			"currentTime": time.Now(),
-			"forecast":    owm_handler.ForecastEvaluation{},
-			"sprintf":     fmt.Sprintf,
+			"weather":      owm.WeatherData{},
+			"currentTime":  time.Now(),
+			"sprintf":      fmt.Sprintf,
+			"hoursFromNow": hoursFromNow,
+			"todayAt":      todayAt,
 		}
 		return &env
 	}
 
 	env := map[string]interface{}{
-		"temperature": data.CurrentTemp,
-		"tempMin":     data.TempMin,
-		"tempMax":     data.TempMax,
-		"feelsLike":   data.FeelsLike,
-		"rain1h":      data.Rain1h,
-		"rain3h":      data.Rain3h,
-		"snow1h":      data.Snow1h,
-		"snow3h":      data.Snow3h,
-		"uvValue":     data.UVValue,
-		"cloudiness":  data.Cloudiness,
-		"windSpeed":   data.WindSpeed,
-		"currentTime": data.CurrentTime,
-		"forecast":    data.Forecast,
-		"sprintf":     fmt.Sprintf,
+		"weather":      *data,
+		"currentTime":  time.Now(),
+		"sprintf":      fmt.Sprintf,
+		"hoursFromNow": hoursFromNow,
+		"todayAt":      todayAt,
 	}
 	return &env
+}
+
+func hoursFromNow(hours int) time.Time {
+	t := time.Now().Add(time.Hour * time.Duration(hours))
+	return t
+}
+
+func todayAt(hour int) time.Time {
+	now := time.Now()
+	t := time.Date(now.Year(), now.Month(), now.Day(), hour, 0, 0, 0, now.Location())
+	return t
 }
 
 func compileMessage(message *Message, env map[string]interface{}) error {
@@ -204,7 +197,7 @@ func Compile(messages *[]Message) error {
 	return nil
 }
 
-func Evaluate(data *owm_handler.EvaluationData, messages *[]Message) []string {
+func Evaluate(data *owm.WeatherData, messages *[]Message) []string {
 	processedMessages := []string{}
 	env := buildEnv(data)
 

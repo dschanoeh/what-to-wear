@@ -3,7 +3,8 @@ server:
 cron_expression: "* * * * *"
 open_weather_map:
   api_key: "[your key here]"
-  city: "Wolfsburg"
+  latitude: 52.422994
+  longitude: 10.791961
   language: "en"
 imaging:
   width: 800
@@ -19,30 +20,31 @@ mqtt:
 messages:
   - message: >
       "Better bring an <i class='fas fa-umbrella'></i>."
-    condition: "forecast.CumulativePrecipitationTill(20) > 0.5"
+    condition: "weather.CumulativePrecipitationTill(todayAt(20)) > 0.5"
   - message: "'It would be best to wear a ' + top + ' and ' + bottom + '.'"
+    condition: "currentTime.Hour() < 20"
     variables:
       - name: "top"
         choices:
-          - expression: "forecast.AverageFeelsLikeTill(20) > 20"
+          - expression: "weather.AverageFeelsLikeTill(todayAt(20)) > 20"
             value: "t-shirt"
-          - expression: "forecast.AverageFeelsLikeTill(20) <= 20"
+          - expression: "weather.AverageFeelsLikeTill(todayAt(20)) <= 20"
             value: "sweatshirt"
-          - expression: "forecast.AverageFeelsLikeTill(20) <= 12"
+          - expression: "weather.AverageFeelsLikeTill(todayAt(20)) <= 12"
             value: "jacket"
-          - expression: "forecast.AverageFeelsLikeTill(20) <= 0"
+          - expression: "weather.AverageFeelsLikeTill(todayAt(20)) <= 0"
             value: "winter coat"
       - name: "bottom"
         choices:
-          - expression: "forecast.AverageFeelsLikeTill(20) > 20"
+          - expression: "weather.AverageFeelsLikeTill(todayAt(20)) > 22"
             value: "shorts"
-          - expression: "forecast.AverageFeelsLikeTill(20) <= 20"
+          - expression: "weather.AverageFeelsLikeTill(todayAt(20)) <= 22"
             value: "long pants"
   - message: >
       "It's <i class='fas fa-bicycle'></i> weather!"
-    condition: "(rain3h + snow3h) < 0.2 && feelsLike > 0"
+    condition: "(weather.Current.Rain.OneHour + weather.Current.Snow.OneHour) < 0.2 && weather.Current.FeelsLike > 0"
   - message: >
       "It's <i class='fas fa-bicycle'></i> to work weather!"
     negative_message: >
       "No <i class='fas fa-bicycle'></i> to work weather <i class='fas fa-frown'></i>"
-    condition: "forecast.CumulativePrecipitationTill(17) < 0.2 && tempMin > 0"
+    condition: "weather.CumulativePrecipitationTill(todayAt(17)) < 0.2 && weather.DailyWeather[0].Temperature.Min > 0"
