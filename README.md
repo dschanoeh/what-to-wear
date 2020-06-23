@@ -5,7 +5,7 @@ Together with [ePaperDisplay](https://github.com/dschanoeh/ePaperDisplay) it can
 
 The user can specify messages to be displayed based on weather criteria. Conditions are evaluated using the [Expr expression language](https://github.com/antonmedv/expr).
 
-![](examples/screenshot.png)
+![](examples/image.jpg)
 
 ## Installation
 Besides the what-to-wear binary, a Chrome installation is required on the host.
@@ -23,7 +23,7 @@ Any other files to be served (e.g. webfonts, images, ...) can be added in the `s
 ### Images
 In addition to the website, the display data will also be available as image data. The images can either be received through http from the server or can be
 pushed through MQTT.
-Whenever an update is performed a headless Chrome instance will be used to render the display, process, and push the data.
+Whenever an update is performed, a headless Chrome instance will be used to render the display, process, and push the data.
 
 ### Messages
 Messages can have conditions that determine if they are displayed or not:
@@ -47,3 +47,21 @@ Variables can be defined that that can be built into the message string. Variabl
           - expression: "weather.AverageFeelsLikeTill(todayAt(20)) <= 20"
             value: "sweatshirt"
 ```
+
+The variable *weather* is an instance of *WeatherData* in [go-owm](https://github.com/dschanoeh/go-owm/blob/master/owm.go) and all its properties can be used for evaluation.
+
+In addition, it is possible to call WeatherData helper functions such as:
+
+| Function | Description |
+| --- | --- |
+| WeatherAt(referenceTime time.Time) *HourlyWeatherSlice | returns the weather closest to referenceTime |
+| CumulativePrecipitationTill(referenceTime time.Time) float64 | returns the cumulative precipitation from the beginning of the data range till referenceTime |
+| AverageTemperatureTill(referenceTime time.Time) float64 | returns the average temperature from the beginning of the data range till referenceTime |
+| AverageFeelsLikeTill(referenceTime time.Time) float64 | returns the average feels like temperature from the beginning of the data range till referenceTime |
+
+To make handling of time easier, the following two helper functions are provided:
+
+| Function | Description |
+| --- | --- |
+| hoursFromNow(hours int) time.Time | Returns a Time object representing *hours* hours from now |
+| todayAt(hour int) time.Time | Returns a Time object representing *hour* time of day |

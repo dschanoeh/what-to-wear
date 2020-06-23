@@ -126,6 +126,7 @@ func evaluateMessage(message *Message, env map[string]interface{}) (string, erro
 		conditionResult = result
 		// If the result is negative and we don't have a negative message, we can skip further evaluation
 		if !conditionResult && message.NegativeMessage == "" {
+			log.Debug("Condition evaluated to false - skipping further computation.")
 			return "", nil
 		}
 	}
