@@ -18,6 +18,7 @@ const (
 	chromeScreenshotFilename = "screenshot.png"
 	ditheredFilename         = "dithered.png"
 	chromeTimeout            = 10000 // in ms
+	VirtualTimeBudget        = 5000  // in ms
 )
 
 type ImageConfig struct {
@@ -69,6 +70,7 @@ func (i *ImageProcessor) takeScreenshot() error {
 		"--disable-gpu",
 		"--screenshot",
 		fmt.Sprintf("--window-size=%d,%d", i.imageConfig.Width, i.imageConfig.Height),
+		fmt.Sprintf("--virtual-time-budget=%d", VirtualTimeBudget),
 		i.imageConfig.ScrapeURL,
 	)
 
