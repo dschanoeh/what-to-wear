@@ -194,6 +194,7 @@ func updateData() {
 	imageProcessor.Update()
 	mqttClient.Post(imageProcessor.GetImageAsBinary(), currentDateString)
 	webServer.UpdateImage(imageProcessor.GetImageAsBinary())
+	mqttClient.PostImageURL("http://" + config.ServerConfig.Listen + "/eInkImage")
 }
 
 func publishNextUpdateTime() {
