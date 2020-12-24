@@ -56,6 +56,8 @@ func FontAwesomeIconFromWeatherID(id uint16) string {
 		return "cloud-showers-heavy"
 	case 600, 601, 602, 611, 612, 613, 615, 616, 620, 621, 622:
 		return "snowflake"
+	case 701, 711, 721, 731, 741, 751, 761, 762, 771, 781:
+		return "smog"
 	case 800:
 		return "sun"
 	case 801, 802:
