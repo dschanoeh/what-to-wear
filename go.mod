@@ -4,11 +4,13 @@ go 1.14
 
 require (
 	github.com/MaxHalford/halfgone v0.0.0-20171017091812-482157b86ccb
-	github.com/antonmedv/expr v1.8.8
+	github.com/antonmedv/expr v1.8.9
 	github.com/dschanoeh/go-owm v0.1.2
-	github.com/eclipse/paho.mqtt.golang v1.2.0
+	github.com/eclipse/paho.mqtt.golang v1.3.0
+	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/sirupsen/logrus v1.6.0
-	golang.org/x/net v0.0.0-20200602114024-627f9648deb9 // indirect
-	gopkg.in/yaml.v2 v2.3.0
+	github.com/sirupsen/logrus v1.7.0
+	golang.org/x/net v0.0.0-20201224014010-6772e930b67b // indirect
+	golang.org/x/sys v0.0.0-20201223074533-0d417f636930 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 )
