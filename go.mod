@@ -7,7 +7,6 @@ require (
 	github.com/antonmedv/expr v1.8.9
 	github.com/dschanoeh/go-owm v0.1.2
 	github.com/eclipse/paho.mqtt.golang v1.3.0
-	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.7.0
 	golang.org/x/net v0.0.0-20201224014010-6772e930b67b // indirect
