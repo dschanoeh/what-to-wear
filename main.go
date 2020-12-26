@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	notificationTimeDelay = 5 + imaging.VirtualTimeBudget
+	notificationTimeDelay = 5 + (imaging.VirtualTimeBudget / 1000)
 )
 
 var (
