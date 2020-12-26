@@ -19,6 +19,7 @@ const (
 	ditheredFilename         = "dithered.png"
 	chromeTimeout            = 10000 // in ms
 	VirtualTimeBudget        = 5000  // in ms
+	screenshotRetries        = 3
 )
 
 type ImageConfig struct {
@@ -68,6 +69,8 @@ func (i *ImageProcessor) takeScreenshot() error {
 	cmd := exec.CommandContext(ctx, i.imageConfig.ChromeBinary,
 		"--headless",
 		"--disable-gpu",
+		"--disable-extensions",
+		"--disable-dev-shm-usage",
 		"--screenshot",
 		fmt.Sprintf("--window-size=%d,%d", i.imageConfig.Width, i.imageConfig.Height),
 		fmt.Sprintf("--virtual-time-budget=%d", VirtualTimeBudget),
@@ -97,23 +100,31 @@ func (i *ImageProcessor) takeScreenshot() error {
 }
 
 func (i *ImageProcessor) Update() {
-	err := i.takeScreenshot()
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	screenshot, err := halfgone.LoadImage(i.tempDir + "/" + chromeScreenshotFilename)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	if i.imageConfig.Dithering {
-		dithered := i.ditherImage(&screenshot)
-		halfgone.SaveImagePNG(dithered, i.imageConfig.WorkingDir+"/"+ditheredFilename)
-		i.currentImage = dithered
-	} else {
-		i.currentImage = halfgone.ImageToGray(screenshot)
+	for t := 0; t < screenshotRetries; t++ {
+		log.Infof("Attempting screen capture try %d", t)
+		err := i.takeScreenshot()
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		screenshot, err := halfgone.LoadImage(i.tempDir + "/" + chromeScreenshotFilename)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		if isAllWhite(&screenshot) {
+			log.Error("The screenshot was all white. Let's try again...")
+			continue
+		} else {
+			if i.imageConfig.Dithering {
+				dithered := i.ditherImage(&screenshot)
+				halfgone.SaveImagePNG(dithered, i.imageConfig.WorkingDir+"/"+ditheredFilename)
+				i.currentImage = dithered
+			} else {
+				i.currentImage = halfgone.ImageToGray(screenshot)
+			}
+			return
+		}
 	}
 }
 
@@ -121,6 +132,23 @@ func (i *ImageProcessor) ditherImage(img *image.Image) *image.Gray {
 	gray := halfgone.ImageToGray(*img)
 	dithered := halfgone.TwoRowSierraDitherer{}.Apply(gray)
 	return dithered
+}
+
+func isAllWhite(img *image.Image) bool {
+	gray := halfgone.ImageToGray(*img)
+	bounds := gray.Bounds()
+	width := bounds.Dx()
+	height := bounds.Dy()
+
+	for h := 0; h < height; h++ {
+		for w := 0; w < width; w++ {
+			px := gray.GrayAt(w, h)
+			if px.Y != 255 {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // GetImageAsBinary returns a one-dimensional byte array for all the pixels in the current image.
