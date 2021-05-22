@@ -10,6 +10,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	ConnectTimeout = time.Second * 60
+)
+
 type MQTTConfig struct {
 	BrokerURL string `yaml:"broker_url"`
 	BaseTopic string `yaml:"base_topic"`
@@ -27,14 +31,29 @@ func New(config *MQTTConfig) (*MQTTClient, error) {
 
 	c.options = mqtt.NewClientOptions()
 	c.options.AddBroker(config.BrokerURL)
+	c.options.SetAutoReconnect(true)
+	c.options.SetConnectionLostHandler(connectionLostHandler)
+	c.options.SetReconnectingHandler(reconnectingHandler)
+	c.options.SetConnectTimeout(ConnectTimeout)
+	c.options.SetConnectRetry(true)
+	c.options.SetConnectRetryInterval(time.Second * 5)
 	c.client = mqtt.NewClient(c.options)
 	token := c.client.Connect()
 
-	if !token.WaitTimeout(time.Second * 2) {
-		return nil, errors.New("Could not connect MQTT client")
+	if !token.WaitTimeout(ConnectTimeout) {
+		return nil, errors.New("could not connect MQTT client")
 	}
+	log.Info("MQTT connected")
 
 	return &c, nil
+}
+
+func reconnectingHandler(client mqtt.Client, options *mqtt.ClientOptions) {
+	log.Info("Attempting to reconnect to broker...")
+}
+
+func connectionLostHandler(client mqtt.Client, reason error) {
+	log.Warn("MQTT broker connection lost: ", reason.Error())
 }
 
 func (c *MQTTClient) Close() error {

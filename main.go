@@ -168,7 +168,7 @@ func updateData() {
 		log.Error("Didn't receive updated information. Skipping update: ", err)
 		return
 	}
-	log.Infof("Evaluation data: %+v\n", data)
+	log.Debugf("Evaluation data: %+v\n", data)
 	log.Infof("Weather report: %+v\n", report)
 
 	messages := evaluator.Evaluate(data, &config.Messages)
@@ -192,9 +192,15 @@ func updateData() {
 
 	webServer.UpdateData(&content)
 	imageProcessor.Update()
-	mqttClient.Post(imageProcessor.GetImageAsBinary(), currentDateString)
+	err = mqttClient.Post(imageProcessor.GetImageAsBinary(), currentDateString)
+	if err != nil {
+		log.Error("Was not able to post image to MQTT broker: ", err)
+	}
 	webServer.UpdateImage(imageProcessor.GetImageAsBinary())
-	mqttClient.PostImageURL("http://" + config.ServerConfig.Listen + "/eInkImage")
+	err = mqttClient.PostImageURL("http://" + config.ServerConfig.Listen + "/eInkImage")
+	if err != nil {
+		log.Error("Was not able to post image URL to MQTT broker: ", err)
+	}
 }
 
 func publishNextUpdateTime() {
@@ -209,7 +215,10 @@ func publishNextUpdateTime() {
 		} else {
 			log.Warn("Scheduler doesn't seem to have any entries...")
 		}
-		mqttClient.RefreshUpdateTime(tillNextUpdate)
+		err := mqttClient.RefreshUpdateTime(tillNextUpdate)
+		if err != nil {
+			log.Error("Was not able to post time to update to MQTT broker: ", err)
+		}
 
 		time.Sleep(5 * time.Second)
 	}
