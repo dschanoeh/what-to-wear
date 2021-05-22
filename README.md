@@ -1,4 +1,8 @@
 # what-to-wear
+
+![Build status](https://github.com/dschanoeh/what-to-wear/workflows/build/badge.svg)
+![License](https://img.shields.io/github/license/dschanoeh/what-to-wear)
+
 what-to-wear is a service that periodically queries the openweathermap-API to get the latest weather data and generates a dynamic info display.
 
 Together with [ePaperDisplay](https://github.com/dschanoeh/ePaperDisplay) it can be used as an e paper weather display.
