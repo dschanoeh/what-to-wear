@@ -188,7 +188,7 @@ func evaluateVariable(v *Variable, env *map[string]interface{}) string {
 func Compile(messages *[]Message) error {
 	env := buildEnv(nil)
 
-	for i, _ := range *messages {
+	for i := range *messages {
 		err := compileMessage(&((*messages)[i]), *env)
 		if err != nil {
 			return err

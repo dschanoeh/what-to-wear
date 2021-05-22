@@ -198,11 +198,11 @@ func updateData() {
 }
 
 func publishNextUpdateTime() {
-	for true {
+	for {
 		tillNextUpdate := 0
 		if len(cronScheduler.Entries()) > 0 {
 			nextTrigger := cronScheduler.Entries()[0].Next
-			delta := nextTrigger.Sub(time.Now())
+			delta := time.Until(nextTrigger)
 			tillNextUpdate = int(delta.Seconds())
 			// We'll lie a little bit to make sure the image is already rendered when the client checks in
 			tillNextUpdate += notificationTimeDelay
